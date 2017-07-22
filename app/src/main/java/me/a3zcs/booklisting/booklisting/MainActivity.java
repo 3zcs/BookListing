@@ -141,25 +141,25 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.i("result", builder.toString());
                 JSONObject topLevel = new JSONObject(builder.toString());
+                if(topLevel.has("items")) {
+                    JSONArray arrayObject = topLevel.getJSONArray("items");
+                    List<String> authors;
+                    for (int i = 0; i < arrayObject.length(); i++) {
+                        JSONObject object = arrayObject.getJSONObject(i).getJSONObject("volumeInfo");
+                        authors = new ArrayList<>();
+                        try {
+                            JSONArray authorsList = object.getJSONArray("authors");
+                            if (authors != null)
+                                for (int j = 0; j < authorsList.length(); j++) {
+                                    authors.add(authorsList.getString(j));
+                                }
+                        } catch (JSONException e) {
+                            authors.add(MainActivity.this.getString(R.string.na));
+                        }
 
-                JSONArray arrayObject = topLevel.getJSONArray("items");
-                //weather = String.valueOf(object.getString("title"));
-                List<String> authors;
-                for (int i = 0; i < arrayObject.length(); i++) {
-                    JSONObject object = arrayObject.getJSONObject(i).getJSONObject("volumeInfo");
-                    authors = new ArrayList<>();
-                    try {
-                        JSONArray authorsList = object.getJSONArray("authors");
-                        if (authors != null)
-                            for (int j = 0; j < authorsList.length(); j++) {
-                                authors.add(authorsList.getString(j));
-                            }
-                    } catch (JSONException e) {
-                        authors.add(MainActivity.this.getString(R.string.na));
+
+                        bookList.add(new Book(object.getString("title"), authors));
                     }
-
-
-                    bookList.add(new Book(object.getString("title"), authors));
                 }
 
 
