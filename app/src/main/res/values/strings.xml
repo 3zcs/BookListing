@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name" translatable="false">BookListing</string>
+    <string name="search_about">Search about</string>
+    <string name="search">Search</string>
+    <string name="no_result">No Result</string>
+    <string name="na">N/A</string>
+    <string name="error">Please add search word</string>
+</resources>
