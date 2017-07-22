@@ -1,5 +1,8 @@
 package me.a3zcs.booklisting.booklisting;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
         searchWord = (EditText) findViewById(R.id.search_editText);
         search = (Button) findViewById(R.id.button);
         recyclerView = (RecyclerView) findViewById(R.id.book_list);
-        noResult = (TextView)findViewById(R.id.no_result);
+        noResult = (TextView) findViewById(R.id.no_result);
         manager = new LinearLayoutManager(this);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey("Book") && savedInstanceState.containsKey("position")){
+        if (savedInstanceState != null && savedInstanceState.containsKey("Book") && savedInstanceState.containsKey("position")) {
             bookList = savedInstanceState.getParcelableArrayList("Book");
 
 
@@ -58,26 +62,38 @@ public class MainActivity extends AppCompatActivity {
             recyclerView.setAdapter(adapter);
             handelList(bookList);
             manager.onRestoreInstanceState(state);
-        }else {
+        } else {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             adapter = new BookAdapter(this, bookList);
             recyclerView.setAdapter(adapter);
         }
 
 
-
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!TextUtils.isEmpty(searchWord.getText().toString())) {
-                    String searchingWord = searchWord.getText().toString().replace(" ","+");
-                    new fetchBookTask().execute(searchingWord);
-                }else {
-                    searchWord.setError(getString(R.string.error));
+                if (isNetworkAvailable(MainActivity.this)) {
+                    if (!TextUtils.isEmpty(searchWord.getText().toString())) {
+                        String searchingWord = searchWord.getText().toString().replace(" ", "+");
+                        new fetchBookTask().execute(searchingWord);
+                    } else {
+                        searchWord.setError(getString(R.string.error));
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, MainActivity.this.getString(R.string.check_network), Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
+        public static boolean isNetworkAvailable(Context context) {
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            if (netInfo != null && netInfo.isConnected()) {
+                return true;
+            }
+            return false;
+        }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -125,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.i("result", builder.toString());
                 JSONObject topLevel = new JSONObject(builder.toString());
+
                 JSONArray arrayObject = topLevel.getJSONArray("items");
                 //weather = String.valueOf(object.getString("title"));
                 List<String> authors;
@@ -132,14 +149,15 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = arrayObject.getJSONObject(i).getJSONObject("volumeInfo");
                     authors = new ArrayList<>();
                     try {
-                        JSONArray authorsList = object.getJSONArray("authors") ;
+                        JSONArray authorsList = object.getJSONArray("authors");
                         if (authors != null)
                             for (int j = 0; j < authorsList.length(); j++) {
                                 authors.add(authorsList.getString(j));
                             }
-                    }catch (JSONException e){
+                    } catch (JSONException e) {
                         authors.add(MainActivity.this.getString(R.string.na));
                     }
+
 
                     bookList.add(new Book(object.getString("title"), authors));
                 }
@@ -150,7 +168,8 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
-                e.printStackTrace();
+                //handel item nullity
+                bookList.clear();
             } finally {
                 if (connection == null)
                     connection.disconnect();

@@ -42,20 +42,12 @@ public class Book implements Parcelable{
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getAuthor() {
         String authors = "";
         for (String s: author) {
             authors = s + ",";
         }
         return authors.substring(0,authors.length()-1);
-    }
-
-    public void setAuthor(List<String> author) {
-        this.author = author;
     }
 
     @Override

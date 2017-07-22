@@ -5,4 +5,5 @@
     <string name="no_result">No Result</string>
     <string name="na">N/A</string>
     <string name="error">Please add search word</string>
+    <string name="check_network">Check network connection</string>
 </resources>
